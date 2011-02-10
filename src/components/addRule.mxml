@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="190" height="228">
+	
+	<fx:Metadata>
+		[Event(name="SaveRule")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			
+			import org.osmf.layout.AbsoluteLayoutFacet;
+			
+			private function close():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function save():void
+			{
+				this.dispatchEvent(new Event("SaveRule"));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button x="96" y="158" label="Add" click="save()"/>
+	<s:Button x="10" y="158" label="Cancel" click="close()"/>
+	<s:TextInput x="10" y="10" width="78" id="rule"/>
+	<s:NumericStepper x="10" y="40" width="78" id="retention" minimum="1" maximum="40000"/>
+	<s:NumericStepper x="10" y="71" width="78" id="percentage" minimum="1" maximum="100"/>
+	<s:Label x="96" y="20" text="Rule Name"/>
+	<s:Label x="96" y="51" text="Retention"/>
+	<s:Label x="96" y="82" text="Percentage"/>
+</s:TitleWindow>

@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" 
+                   backgroundImage="@Embed('assets/690_550.png')" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import components.addRule;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.controls.Alert;
+			import mx.controls.TextInput;
+			import mx.events.DataGridEvent;
+			import mx.managers.PopUpManager;
+			
+			import vo.Rule;
+			
+			private var mainResolution:Number; //Identifier for the main camera resolution
+			private var subResolution:Number; //Identifier for the sub camera resolution
+			private var preset1MBOfVideo:Number; //Amount of video produced on Preset 1
+			private var preset2MBOfVideo:Number; //Amount of video produced on Preset 2
+			private var preset3MBOfVideo:Number; //Amount of video produced on Preset 3
+			[Bindable]
+			private var totalGigsVideo:Number = 0.00; //Total Gigabytes of video produced in one day
+			private var ruleArray:ArrayCollection = new ArrayCollection(); //Array collection to hold Gigabytes of video per rule
+			[Bindable]
+			private var totalTB:Number = 0.00; //Identifier for total Terabytes needed to store all video
+			[Bindable]
+			public var ac:ArrayCollection; //Array Collection to hold the rules
+			private static const ADD_RULE:String = "Click to Add Rule";
+			private var addRuleScreen:components.addRule;
+			
+			private function init():void
+			{
+				addRuleScreen.addEventListener("SaveRule", saveRule);
+				ac = new ArrayCollection();
+				ac.addItem(new Rule("Default", 90, 100));
+				//ac.addItem({name: ADD_RULE});
+			}
+			
+			/*private function checkEdit(e:DataGridEvent):void
+			{
+				//Do not allow editing of Add Task row except for "Click to add" column
+				if(e.rowIndex == ac.length - 1 && e.columnIndex != 0)
+				e.preventDefault();
+			}
+			
+			private function editEnd(e:DataGridEvent):void
+			{
+				// Adding a new rule
+				if(e.rowIndex == ac.length - 1)
+				{
+					var txtIn:Object = 
+						TextInput(e.currentTarget.itemEditorInstance);
+					
+					// Add new rule
+					if(txtIn.text != ADD_RULE)
+					{
+						ac.addItem({name: ADD_RULE});
+						tagDg.invalidateList();
+					}
+				}
+				
+			}*/
+				
+			//Calculate Resolution Rates
+			private function calculateResRates():void
+			{
+				var resRateMain:Number;
+				var resRateSub:Number;
+				
+				if(preset1ResRate.selectedValue == "D1 Hi")
+				{
+					resRateMain = 1024;
+				}
+				else if(preset1ResRate.selectedValue == "D1 Std")
+				{
+					resRateMain = 756;
+				}
+				else if(preset1ResRate.selectedValue == "D1 10")
+				{
+					resRateMain = 252;
+				}
+				else if(preset1ResRate.selectedValue == "CIF")
+				{
+					resRateMain = 512;
+				}
+				
+				mainResolution = resRateMain;
+				
+				if(preset2ResRate.selectedValue == "D1 Hi")
+				{
+					resRateSub = 1024;
+				}
+				else if(preset2ResRate.selectedValue == "D1 Std")
+				{
+					resRateSub = 756;
+				}
+				else if(preset2ResRate.selectedValue == "D1 10")
+				{
+					resRateSub = 252;
+				}
+				else if(preset2ResRate.selectedValue == "CIF")
+				{
+					resRateSub = 512;
+				}
+				
+				subResolution = resRateSub;
+				
+			}
+			
+			//Calculate the amount of MB's of video on Preset 1
+			private function calculatePreset1():void
+			{
+				var numChan:String;
+				var mbVideo:Number;
+				var percent:Number;
+				var mbPreset1:Number;
+				
+				if(preset1.selectedValue == "1 Channel")
+				{
+					numChan = "single";
+				}
+				else if(preset1.selectedValue == "2 Channel")
+				{
+					numChan = "dual";
+				}
+				
+				if(numChan == "single")
+				{
+					mbVideo = mainResolution;
+				}
+				else if(numChan == "dual")
+				{
+					mbVideo = mainResolution + subResolution;
+				}
+				
+				preset1MBOfVideo = (mbVideo * p1Percentage.value) / 100;
+				
+			}
+			
+			//Calculate the amount of MB's of video on Preset 2
+			private function calculatePreset2():void
+			{
+				var numChan:String;
+				var mbVideo:Number;
+				var percent:Number;
+				var mbPreset1:Number;
+				
+				if(preset2.selectedValue == "1 Channel")
+				{
+					numChan = "single";
+				}
+				else if(preset2.selectedValue == "2 Channel")
+				{
+					numChan = "dual";
+				}
+				else if(preset2.selectedValue == "none")
+				{
+					numChan = "none";
+				}
+				
+				if(numChan == "single")
+				{
+					mbVideo = mainResolution;
+				}
+				else if(numChan == "dual")
+				{
+					mbVideo = mainResolution + subResolution;
+				}
+				else if(numChan == "none")
+				{
+					mbVideo = 0;
+				}
+				
+				preset2MBOfVideo = (mbVideo * p2Percentage.value) / 100;
+				
+			}
+			
+			//Calculate the amount of MB's of video on Preset 2
+			private function calculatePreset3():void
+			{
+				var numChan:String;
+				var mbVideo:Number;
+				var percent:Number;
+				var mbPreset1:Number;
+				
+				if(preset3.selectedValue == "1 Channel")
+				{
+					numChan = "single";
+				}
+				else if(preset3.selectedValue == "2 Channel")
+				{
+					numChan = "dual";
+				}
+				else if(preset3.selectedValue == "none")
+				{
+					numChan = "none";
+				}
+				
+				if(numChan == "single")
+				{
+					mbVideo = mainResolution;
+				}
+				else if(numChan == "dual")
+				{
+					mbVideo = mainResolution + subResolution;
+				}
+				else if(numChan == "none")
+				{
+					mbVideo = 0;
+				}
+				
+				preset3MBOfVideo = (mbVideo * p3Percentage.value) / 100;
+				
+			}
+			
+			//Calculate the total GB's of video produced per day
+			private function calculateCarTotal():void
+			{	
+				var totalMB:Number;
+				var totalTotal:Number;
+				var carTotal:Number;
+				
+				totalMB = preset1MBOfVideo + preset2MBOfVideo + preset3MBOfVideo;
+				totalTotal = totalMB * hoursVideo.value;
+				carTotal = totalTotal * numCars.value;
+				totalGigsVideo = carTotal / 1024;
+			}
+			
+			//Calculate the number of GB's of video per rule
+			private function calculateGigsPerRule():void
+			{				
+				var retentionPeriod:Number;
+				var percentage:Number;
+				var ruleTotal:Number;
+				
+				for(var i:int = 0; i < ac.length - 1; i++)
+				{
+			     	retentionPeriod = ac.getItemAt(i).retention;
+					percentage = ac.getItemAt(i).percent;
+					ruleTotal = ((totalGigsVideo * retentionPeriod) * percentage) / 100;
+					ruleArray.addItem({total:ruleTotal});
+				}
+			}
+			
+			//Calculate total TB needed 
+			private function calculateTotalTB():void
+			{				
+				var totalTotal:Number = 0;
+				var total:Number;
+				
+				for(var i:int = 0; i < ruleArray.length; i++)
+				{
+					total = ruleArray.getItemAt(i).total;
+					totalTotal = totalTotal + total; 
+				}
+				totalTB = totalTotal / 1000;
+			}
+			
+			//Alerts if entered values are incorrect
+			private function alertTypeStuff():void
+			{
+				var percent1:Number;
+				var percent2:Number = 0;
+				
+				for(var i:int = 0; i < ac.length - 1; i++)
+				{
+					percent1 = ac.getItemAt(i).percent;
+					percent2 = percent2 + percent1;
+				}
+				
+				if(p1Percentage.value + p2Percentage.value + p3Percentage.value > 100)
+				{
+					Alert.show("Percentage of Preset recording must not be greater than 100!", "Percentage Error");
+				}				
+				else if(percent2 > 100)
+				{
+					Alert.show("Percentage of video must not be greater than 100!", "Percentage Error");
+				}
+				else
+				{
+					doCalculate();
+				}
+			}
+			
+			/*private function sortRules():void
+			{
+				var dataSortField:SortField = new SortField();
+				dataSortField.name = "retention";
+				dataSortField.numeric = true;
+				
+				var numericDataSort:Sort = new Sort();
+				numericDataSort.fields = [dataSortField];
+				
+				ac.sort = numericDataSort;
+				ac.refresh();
+			}*/
+			
+			private function doCalculate():void
+			{
+				totalGigsVideo = 0.00;
+				totalTB = 0.00;
+				calculateResRates();
+				calculatePreset1();
+				calculatePreset2();
+				calculatePreset3();
+				calculateCarTotal();
+				calculateGigsPerRule();
+				calculateTotalTB();
+				
+			}
+			
+			public function removeRule():void
+			{
+				ac.removeItemAt(tagDg.selectedIndex);
+			}
+			
+			private function addRule():void
+			{
+				PopUpManager.addPopUp(addRuleScreen, this, true);
+				PopUpManager.centerPopUp(addRuleScreen);
+			}
+			
+			private function saveRule(e:Event):void
+			{
+				var rule:Rule;
+				rule.name = addRuleScreen.name;
+				rule.retention = addRuleScreen.retention.value;
+				rule.percent = addRuleScreen.percentage.value;
+				ac.addItem(rule);
+				PopUpManager.removePopUp(addRuleScreen);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations> 
+		<s:RadioButtonGroup id="preset1"/>
+		<s:RadioButtonGroup id="preset2"/>
+		<s:RadioButtonGroup id="preset3"/>
+		<s:RadioButtonGroup id="preset1ResRate"/>
+		<s:RadioButtonGroup id="preset2ResRate"/>
+		<mx:NumberFormatter id="formatter" precision="2"/>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<mx:Image x="10" y="12" source="assets/Arbitrator_logo.png" scaleContent="false"/>
+	<s:NumericStepper x="10" y="99" width="78" id="numCars" maximum="99999"/>
+	<s:Label x="92" y="109" text="Number of Cars"/>	
+	<s:NumericStepper x="10" y="130" width="78" id="hoursVideo" maximum="24"/>
+	<s:Label x="92" y="139" text="Hours Per Day"/>
+	<s:BorderContainer x="10" y="174" width="240" height="45" backgroundAlpha="0" borderVisible="true" borderColor="#000000">
+		<s:RadioButton x="2" y="4" label="1 Channel" groupName="preset1"/>
+		<s:RadioButton x="2" y="20" label="2 Channel" groupName="preset1"/>
+		<s:NumericStepper x="91" y="18" id="p1Percentage" maximum="100" width="78"/>
+		<mx:VRule x="82" y="4" height="35" width="2" alpha=".5"/>
+		<s:Label x="91" y="2" text="Percentage of Recording"/>
+	</s:BorderContainer>
+	<s:BorderContainer x="10" y="238" width="240" height="48" backgroundAlpha="0" borderVisible="true" borderColor="#000000">
+		<s:RadioButton x="2" y="-1" label="1 Channel" groupName="preset2"/>
+		<s:RadioButton x="2" y="14" label="2 Channel" groupName="preset2"/>
+		<s:RadioButton x="2" y="29" label="None" groupName="preset2"/>
+		<mx:VRule x="82" y="4" height="38" width="2" alpha=".5"/>
+		<s:NumericStepper x="91" y="21" width="78" maximum="100" id="p2Percentage"/>
+		<s:Label x="91" y="4" text="Percentage of Recording"/>
+	</s:BorderContainer>
+	<s:BorderContainer x="10" width="240" height="48" y="306" backgroundAlpha="0" borderVisible="true" borderColor="#000000">
+		<s:RadioButton x="2" y="-1" label="1 Channel" groupName="preset3"/>
+		<s:RadioButton x="2" y="14" label="2 Channel" groupName="preset3"/>
+		<s:RadioButton x="2" y="29" label="None" groupName="preset3"/>
+		<s:NumericStepper x="91" y="21" maximum="100" width="78" id="p3Percentage"/>
+		<s:Label x="91" y="5" text="Percentage of Recording"/>
+		<mx:VRule x="82" y="4" width="2" height="38" alpha=".5"/>
+	</s:BorderContainer>
+	<s:BorderContainer x="10" y="375" width="170" height="78" backgroundAlpha="0" borderVisible="true" borderColor="#000000">
+		<s:RadioButton x="2" y="11" label="D1 Hi" groupName="preset1ResRate"/>
+		<s:RadioButton x="2" y="27" label="D1 Std" groupName="preset1ResRate"/>
+		<s:RadioButton x="2" y="43" label="D1 10" groupName="preset1ResRate"/>
+		<s:RadioButton x="2" y="59" label="CIF" groupName="preset1ResRate"/>
+		<s:Label x="2" y="2" text="Main"/>
+		<mx:VRule x="82" y="4" width="2" height="68" alpha=".5"/>
+		<s:RadioButton x="86" y="11" label="D1 Hi" groupName="preset2ResRate"/>
+		<s:RadioButton x="86" y="27" label="D1 Std" groupName="preset2ResRate"/>
+		<s:RadioButton x="86" y="43" label="D1 10" groupName="preset2ResRate"/>
+		<s:RadioButton x="86" y="59" label="CIF" groupName="preset2ResRate"/>
+		<s:Label x="86" y="2" text="Sub"/>
+	</s:BorderContainer>
+	<s:Label x="10" y="163" text="Preset 1"/>
+	<s:Label x="10" y="227" text="Preset 2"/>
+	<s:Label x="10" y="295" text="Preset 3"/>
+	<s:Label x="10" y="364" text="Resolution Rates"/>
+	<mx:DataGrid x="270" y="173" width="392" height="234" id="tagDg" 
+				 dataProvider="{ac}" editable="true">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Rule" dataField="name" draggable="false" sortable="false" resizable="false" width="75"/>
+			<mx:DataGridColumn headerText="Retention" dataField="retention" draggable="false" sortable="false" resizable="false" width="90"/>
+			<mx:DataGridColumn headerText="Percentage of Video" dataField="percent" draggable="false" sortable="false" resizable="false"/>
+			<mx:DataGridColumn dataField="name" headerText="" width="18" draggable="false" sortable="false" resizable="false" editable="false">
+				<mx:itemRenderer>
+					<fx:Component>
+						<s:MXItemRenderer>
+							<s:layout>
+								<s:VerticalLayout horizontalAlign="center"/>
+							</s:layout>
+							<!--<fx:Script>
+								<![CDATA[
+									private var _data:Object;
+									private static const theOtherVar:String = "Click to Add Rule";
+									
+									override public function set data(value:Object):void
+									{
+										_data = value;
+										var name:String = String(_data.name);
+										var isDeleteVisible:Boolean = (name.toString() != theOtherVar);
+										
+										if(isDeleteVisible == false)
+										{
+											delBtn.visible = false;
+										}
+									}
+									
+									override public function get data():Object
+									{
+										return _data;
+									}
+								]]>
+							</fx:Script>-->
+							<mx:Image id="delBtn" source="@Embed(source='assets/buttons/delete_button.png')" scaleContent="false" buttonMode="true" click="outerDocument.removeRule()"/>
+						</s:MXItemRenderer>					
+					</fx:Component>
+				</mx:itemRenderer>	
+			</mx:DataGridColumn>
+		</mx:columns>
+	</mx:DataGrid>
+	<s:Button x="584" y="426" label="Calculate" width="78" click="alertTypeStuff()"/>
+	<!--<s:VGroup horizontalAlign="right" x="489" y="417" width="56" verticalAlign="bottom">
+		<s:Label text="{formatter.format(totalGigsVideo)}" fontSize="18" />
+		<s:Label text="{formatter.format(totalTB)}" fontSize="18"/>
+	</s:VGroup>
+	<s:Label text="Total GB Per Day" fontSize="14" x="548" y="420" id="carTotal"/>
+	<s:Label text="Total TB Needed" fontSize="14" x="548" y="443" id="serverTotal"/>-->
+	<s:VGroup horizontalAlign="right" x="486" y="126" width="56" verticalAlign="bottom">
+		<s:Label text="{formatter.format(totalGigsVideo)}" fontSize="18"/>
+		<s:Label text="{formatter.format(totalTB)}" fontSize="18"/>
+	</s:VGroup>
+	<s:Label text="Total GB Per Day" fontSize="14" x="547" y="128" id="carTotal"/>
+	<s:Label text="Total TB Needed" fontSize="14" x="547" y="151" id="serverTotal"/>
+	<s:Button x="270" y="426" label="Add Rule" width="78" click="addRule()"/>
+</s:BorderContainer>

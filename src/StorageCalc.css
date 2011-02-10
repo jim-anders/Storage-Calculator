@@ -1,0 +1,66 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+s|WindowedApplication
+{
+	skinClass: ClassReference("spark.skins.spark.SparkChromeWindowedApplicationSkin");
+}
+
+s|Button
+{
+	skinClass: ClassReference("skins.Button");
+	width: 78;
+}
+
+global
+{
+	content-background-color: #EAE9E9;
+}
+
+s|Label
+{
+	color: #000000;
+	fontWeight: bold;
+}
+
+s|NumericStepper
+{
+	color: #000000;
+	fontWeight: bold;
+}
+
+mx|DataGrid
+{
+	borderVisible: true;
+	color: #000000;
+	fontWeight: bold;
+	textAlign: center;	
+	alternating-item-colors: #d4d4d4, #FFFFFF
+}
+s|BorderContainer
+{
+	borderVisible: false;
+}
+mx|VRule
+{
+	chromeColor: #000000;
+}
+
+mx|Alert
+{
+	color: #124332;
+	background-color: #FFFFFF;
+	header-height: 19;
+	corner-radius: 6;
+	border-style: solid;
+	title-style-name: "title";
+}
+
+.title
+{
+	font-family: Verdana;
+	font-size: 10;
+	font-weight: bold;
+	color: #000000;
+}

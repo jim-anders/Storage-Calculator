@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx" borderVisible="false" backgroundImage="@Embed('assets/215_330.png')">
+	
+	
+	<fx:Script>
+		<![CDATA[
+	
+			private var numberCars:Number;
+			private var hoursVideo:Number;
+			private var retention:Number;
+			private var totalGBDay:Number;
+			private var totalGB:Number;
+			[Bindable]
+			private var totalTB:Number = 0.00;
+	
+			//Function to calculate the number of hours per day
+			private function calculateStorage():void
+			{
+			//Setting values from user input
+			numberCars = numberOfCars.value;
+			hoursVideo = hoursOfVideo.value;
+			retention = retentionDays.value;
+	
+			//Calculate total number of hours
+			totalGBDay = numberCars * hoursVideo;
+	
+			//Calculate total GB needed over retention period
+			totalGB = totalGBDay * retention;
+	
+			//Calculate total TB needed for storage
+			totalTB = (totalGB / 1000) * 1.15;
+			}
+	
+			//Click Handler for the calculate button
+			private function button1_clickHandler(event:MouseEvent):void
+			{
+			calculateStorage();
+			}
+	
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mx:NumberFormatter id="formatter" precision="2"/>
+	</fx:Declarations>
+	
+	<mx:Image x="10" source="assets/Arbitrator_logo.png" y="12"/>
+	<s:Label x="92" y="109" text="Number of Cars"/>
+	<s:Label x="92" y="139" text="Hours Per Day"/>
+	<s:Label x="92" y="169" text="Longest Retention"/>
+	<s:NumericStepper id="numberOfCars" x="10" y="99" width="78" maximum="9999"/>
+	<s:NumericStepper id="hoursOfVideo" x="10" y="130" width="78" maximum="9999"/>
+	<s:NumericStepper id="retentionDays" x="10" y="161" width="78" maximum="40000"/>
+	<s:Button x="10" y="189" label="Calculate" width="78" click="button1_clickHandler(event)"/>
+	<s:VGroup horizontalAlign="right" y="230" width="78" height="20" x="10">
+		<s:Label text="{formatter.format(totalTB)}" fontSize="18" width="78" x="91" height="20"/>
+	</s:VGroup>
+	<s:Label x="92" y="234" text="Total TB Needed"/>
+	
+</s:BorderContainer>

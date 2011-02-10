@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"  
+					   creationComplete="checkForUpdate()" xmlns:views="views.*"
+					   skinClass="skins.AppSkin" title="{version}">
+	<fx:Style source="StorageCalc.css"/>
+	
+	<s:states>
+		<s:State name="basic"/>
+		<s:State name="advanced"/>
+	</s:states>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import air.update.ApplicationUpdaterUI;
+			import air.update.events.UpdateEvent;
+			
+			import mx.controls.Alert;
+			
+			import skins.AppSkin;
+		
+			private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
+			[Bindable]
+			private var version:String;
+			
+			private function checkForUpdate():void {
+				setApplicationVersion(); // Find the current version so we can show it below
+				appUpdater.updateURL = "http://www.janders223.com/arbitrator/calculator/update/update.xml"; // Server-side XML file describing update
+				appUpdater.isCheckForUpdateVisible = false; // We won't ask permission to check for an update
+				appUpdater.addEventListener(UpdateEvent.INITIALIZED, onUpdate); // Once initialized, run onUpdate
+				appUpdater.addEventListener(ErrorEvent.ERROR, onError); // If something goes wrong, run onError
+				appUpdater.initialize(); // Initialize the update framework
+			}
+			
+			private function onError(event:ErrorEvent):void {
+				Alert.show(event.toString());
+			}
+			
+			private function onUpdate(event:UpdateEvent):void {
+				appUpdater.checkNow(); // Go check for an update now
+			}
+			
+			// Find the current version for our Label below
+			private function setApplicationVersion():void {
+				var appXML:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var ns:Namespace = appXML.namespace();
+				version = appXML.ns::version;
+				
+			}
+
+
+			private function advanceView_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "advanced";
+				nativeWindow.width = advanceViewState.width;
+				nativeWindow.height = advanceViewState.height;
+			}
+
+
+			protected function basicView_clickHandler(event:MouseEvent):void
+			{
+				this.currentState = "basic";
+				nativeWindow.width = basicViewState.width;
+				nativeWindow.height = basicViewState.height;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+
+	<s:BorderContainer width="100%" height="32" borderVisible="false" 
+					   backgroundImage.advanced="@Embed('assets/32_550.png')" backgroundImage.basic="@Embed('assets/32_330.png')">	
+		<s:HGroup x="0" y="0" width="100%" height="100%" verticalAlign="middle">
+			<s:HGroup paddingLeft="2" horizontalAlign="left">
+				<s:Button id="basicView" label="Basic" enabled.basic="false" click="basicView_clickHandler(event)"/>
+				<s:Button id="advanceView" label="Advanced" enabled.advanced="false" click="advanceView_clickHandler(event)"/>
+			</s:HGroup>
+		</s:HGroup>
+	</s:BorderContainer>
+	
+	<views:basic id="basicViewState" width="215" height="330" includeIn="basic" y="32"/>
+	
+	<views:advanced id="advanceViewState" x="0" y="32" includeIn="advanced" width="690" height="550"/>		
+	
+	<mx:Image source="assets/panasonic_logo.png" right="5" bottom="5" scaleContent="false"/>
+</s:WindowedApplication>
